@@ -6,6 +6,10 @@ import NoteForm from "../NoteForm/NoteForm";
 import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox";
 import { useDebounce } from "use-debounce";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotes } from "../../services/noteService";
+import type { Note } from "../../types/note";
+import type { FetchNotesResponse } from "../../services/noteService";
 
 const App: React.FC = () => {
    const [page, setPage] = useState(1);
@@ -14,11 +18,26 @@ const App: React.FC = () => {
    const [search, setSearch] = useState("");
    const [debouncedSearch] = useDebounce(search, 500);
 
+   const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
+     queryKey: ["notes", page, 12, debouncedSearch],
+     queryFn: () => fetchNotes(page, 12, debouncedSearch),
+   });
+
+   React.useEffect(() => {
+     if (data?.totalPages !== undefined) {
+       setPageCount(data.totalPages);
+     }
+   }, [data]);
+
+   const notes: Note[] = data?.notes || [];
+
    return (
      <div className={css.app}>
        <header className={css.toolbar}>
          <SearchBox value={search} onChange={setSearch} />
-         <Pagination page={page} setPage={setPage} pageCount={pageCount} />
+         {notes.length > 0 && (
+           <Pagination page={page} setPage={setPage} pageCount={pageCount} />
+         )}
          <button
            type="button"
            className={css.button}
@@ -27,16 +46,15 @@ const App: React.FC = () => {
            Create note +
          </button>
        </header>
-       <NoteList
-         page={page}
-         perPage={12}
-         setTotal={setPageCount}
-         search={debouncedSearch}
-       />
-       <Pagination page={page} setPage={setPage} pageCount={pageCount} />
+       {notes.length > 0 && (
+         <NoteList notes={notes} isLoading={isLoading} isError={isError} />
+       )}
+       {notes.length > 0 && (
+         <Pagination page={page} setPage={setPage} pageCount={pageCount} />
+       )}
        {isModalOpen && (
          <Modal onClose={() => setIsModalOpen(false)}>
-           <NoteForm onSuccess={() => setIsModalOpen(false)} />
+           <NoteForm onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
          </Modal>
        )}
      </div>
