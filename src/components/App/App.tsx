@@ -21,6 +21,7 @@ const App: React.FC = () => {
    const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
      queryKey: ["notes", page, 12, debouncedSearch],
      queryFn: () => fetchNotes(page, 12, debouncedSearch),
+     placeholderData: (prevData) => prevData,
    });
 
    React.useEffect(() => {
@@ -31,10 +32,16 @@ const App: React.FC = () => {
 
    const notes: Note[] = data?.notes || [];
 
+   // Handler to reset page when search changes
+   const handleSearchChange = (newSearch: string) => {
+     setPage(1);
+     setSearch(newSearch);
+   };
+
    return (
      <div className={css.app}>
        <header className={css.toolbar}>
-         <SearchBox value={search} onChange={setSearch} />
+         <SearchBox value={search} onChange={handleSearchChange} />
          {notes.length > 0 && (
            <Pagination page={page} setPage={setPage} pageCount={pageCount} />
          )}
