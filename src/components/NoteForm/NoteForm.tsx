@@ -1,4 +1,5 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import type { FormikHelpers } from "formik";
 import * as Yup from "yup";
 import css from "./NoteForm.module.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +7,7 @@ import { createNote } from "../../services/noteService";
 
 interface NoteFormProps {
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
 const initialValues = {
@@ -26,7 +28,7 @@ const validationSchema = Yup.object({
     .required("Обов'язкове поле"),
 });
 
-const NoteForm: React.FC<NoteFormProps> = ({ onSuccess }) => {
+const NoteForm: React.FC<NoteFormProps> = ({ onSuccess, onCancel }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -38,7 +40,10 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSuccess }) => {
   });
 
   // Сабміт форми
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, resetForm }: any) => {
+  const handleSubmit = async (
+    values: typeof initialValues,
+    { setSubmitting, resetForm }: FormikHelpers<typeof initialValues>
+  ) => {
     await mutation.mutateAsync(values);
     setSubmitting(false);
     resetForm();
@@ -87,7 +92,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSuccess }) => {
             <button
               type="button"
               className={css.cancelButton}
-              onClick={onSuccess}
+              onClick={onCancel}
             >
               Cancel
             </button>

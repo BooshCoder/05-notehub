@@ -20,7 +20,7 @@ export const fetchNotes = async (
     `https://notehub-public.goit.study/api/notes?${params.toString()}`,
     {
       headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+        Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`,
       },
     }
   );
@@ -33,26 +33,31 @@ export interface CreateNoteParams {
   tag: string;
 }
 
+export interface DeleteNoteResponse {
+  note: Note;
+}
+
 export const createNote = async (note: CreateNoteParams): Promise<Note> => {
   const { data } = await axios.post<Note>(
     "https://notehub-public.goit.study/api/notes",
     note,
     {
       headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+        Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`,
       },
     }
   );
   return data;
 };
 
-export const deleteNote = async (id: string): Promise<void> => {
-  await axios.delete(
+export const deleteNote = async (id: number): Promise<Note> => {
+  const { data } = await axios.delete<DeleteNoteResponse>(
     `https://notehub-public.goit.study/api/notes/${id}`,
     {
       headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+        Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`,
       },
     }
   );
+  return data.note;
 };

@@ -1,25 +1,18 @@
-import type { Dispatch, SetStateAction } from "react";
-import { useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchNotes, deleteNote } from "../../services/noteService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "../../services/noteService";
+import type { Note } from "../../types/note";
 import css from "./NoteList.module.css";
 import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import EmptyState from "../EmptyState/EmptyState";
 
 interface NoteListProps {
-  page: number;
-  perPage: number;
-  setTotal: Dispatch<SetStateAction<number>>;
-  search: string;
+  notes: Note[];
+  isLoading: boolean;
+  isError: boolean;
 }
 
-const NoteList: React.FC<NoteListProps> = ({ page, perPage, setTotal, search }) => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", page, perPage, search],
-    queryFn: () => fetchNotes(page, perPage, search),
-  });
-
+const NoteList: React.FC<NoteListProps> = ({ notes, isLoading, isError }) => {
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: deleteNote,
@@ -27,14 +20,6 @@ const NoteList: React.FC<NoteListProps> = ({ page, perPage, setTotal, search }) 
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
-
-  useEffect(() => {
-    if (data?.totalPages !== undefined) {
-      setTotal(data.totalPages);
-    }
-  }, [data, setTotal]);
-
-  const notes = data?.notes || [];
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorMessage />;
