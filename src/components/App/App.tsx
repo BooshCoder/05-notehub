@@ -19,7 +19,7 @@ const App: React.FC = () => {
    const [debouncedSearch] = useDebounce(search, 500);
 
    const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
-     queryKey: ["notes", page, 12, debouncedSearch],
+     queryKey: ["notes", page, debouncedSearch],
      queryFn: () => fetchNotes(page, 12, debouncedSearch),
      placeholderData: (prevData) => prevData,
    });
@@ -55,9 +55,6 @@ const App: React.FC = () => {
        </header>
        {notes.length > 0 && (
          <NoteList notes={notes} isLoading={isLoading} isError={isError} />
-       )}
-       {notes.length > 0 && (
-         <Pagination page={page} setPage={setPage} pageCount={pageCount} />
        )}
        {isModalOpen && (
          <Modal onClose={() => setIsModalOpen(false)}>
